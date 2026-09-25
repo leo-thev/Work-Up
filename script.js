@@ -969,14 +969,38 @@ if (importAppDataButton && importAppDataFile) {
                 throw new Error("Format de sauvegarde non reconnu.");
             }
 
+            const importedData = {};
+
             Object.entries(backup.data).forEach(([key, value]) => {
                 if (allowedKeys.has(key)) {
+                    importedData[key] = value;
                     localStorage.setItem(
                         getScopedStorageKey(key),
                         JSON.stringify(value)
                     );
                 }
             });
+
+            if (Object.keys(importedData).length === 0) {
+                throw new Error("Cette sauvegarde ne contient aucune donnée Work Up.");
+            }
+
+            remoteData = {
+                ...remoteData,
+                ...importedData
+            };
+
+            const { error: importSyncError } = await supabaseClient
+                .from("user_data")
+                .upsert({
+                    user_id: currentAccount.id,
+                    data: remoteData,
+                    updated_at: new Date().toISOString()
+                });
+
+            if (importSyncError) {
+                throw importSyncError;
+            }
 
             window.location.reload();
         } catch (error) {
