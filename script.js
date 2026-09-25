@@ -962,22 +962,25 @@ if (importAppDataButton && importAppDataFile) {
         }
 
         try {
+            if (!currentAccount) {
+                throw new Error("Connecte-toi avant d'importer tes données.");
+            }
+
             const backup = JSON.parse(await file.text());
             const allowedKeys = new Set(getAllAppStorageKeys());
+            const backupData = backup?.version === 1 && backup.data
+                ? backup.data
+                : backup;
 
-            if (!backup || backup.version !== 1 || !backup.data) {
+            if (!backupData || typeof backupData !== "object" || Array.isArray(backupData)) {
                 throw new Error("Format de sauvegarde non reconnu.");
             }
 
             const importedData = {};
 
-            Object.entries(backup.data).forEach(([key, value]) => {
+            Object.entries(backupData).forEach(([key, value]) => {
                 if (allowedKeys.has(key)) {
                     importedData[key] = value;
-                    localStorage.setItem(
-                        getScopedStorageKey(key),
-                        JSON.stringify(value)
-                    );
                 }
             });
 
@@ -1002,8 +1005,18 @@ if (importAppDataButton && importAppDataFile) {
                 throw importSyncError;
             }
 
+            Object.entries(importedData).forEach(([key, value]) => {
+                localStorage.setItem(
+                    getScopedStorageKey(key),
+                    JSON.stringify(value)
+                );
+            });
+
             window.location.reload();
         } catch (error) {
+            if (settingsSaveStatus) {
+                settingsSaveStatus.textContent = `Import impossible : ${error.message}`;
+            }
             window.alert(`Import impossible : ${error.message}`);
         } finally {
             importAppDataFile.value = "";
