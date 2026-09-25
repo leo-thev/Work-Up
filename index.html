@@ -1,0 +1,2136 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Work Up</title>
+
+    <link
+        rel="icon"
+        type="image/png"
+        href="WebSiteLogo.png"
+    >
+
+    <!-- Police -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet"
+    >
+
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+    <div class="auth-overlay" id="authOverlay">
+        <div class="auth-card">
+            <div class="auth-brand">
+                <div class="brand-mark">
+                    <img src="WebSiteLogo.png" alt="Work Up">
+                </div>
+                <strong>Work Up</strong>
+            </div>
+
+            <div class="auth-heading">
+                <span class="eyebrow" id="authEyebrow">ESPACE PERSONNEL</span>
+                <h1 id="authTitle">Connexion</h1>
+                <p id="authDescription">Retrouve tes tâches et habitudes sur ton espace.</p>
+            </div>
+
+            <form id="authForm" class="auth-form">
+                <label class="auth-field" id="authNameField" hidden>
+                    <span>Nom d'affichage</span>
+                    <input id="authName" type="text" autocomplete="name" maxlength="40">
+                </label>
+
+                <label class="auth-field">
+                    <span>Adresse e-mail</span>
+                    <input id="authEmail" type="email" autocomplete="email" required>
+                </label>
+
+                <label class="auth-field">
+                    <span>Mot de passe</span>
+                    <span class="password-input-wrapper">
+                        <input id="authPassword" type="password" autocomplete="current-password" minlength="8" required>
+                        <button class="password-toggle" id="passwordToggle" type="button" aria-label="Afficher le mot de passe" aria-pressed="false">Afficher</button>
+                    </span>
+                </label>
+
+                <p class="auth-error" id="authError" role="alert"></p>
+
+                <button class="primary-button auth-submit" id="authSubmit" type="submit">Se connecter</button>
+            </form>
+
+            <button class="auth-switch" id="authSwitch" type="button">Créer un compte</button>
+            <p class="auth-note">Tes données sont liées à ton compte et synchronisées avec Supabase.</p>
+        </div>
+    </div>
+
+    <!-- =====================================================
+         SIDEBAR
+         ===================================================== -->
+
+    <aside class="sidebar">
+
+        <div class="brand">
+          <div class="brand-mark">
+              <img src="WebSiteLogo.png" alt="Work Up">
+          </div>
+
+          <span>Work Up</span>
+      </div>
+
+        <nav class="navigation">
+
+            <button class="nav-item active" data-view="kanbanView">
+                <span class="nav-icon">▦</span>
+                <span>Kanban</span>
+            </button>
+
+            <button class="nav-item" data-view="habitsView">
+                <span class="nav-icon">◌</span>
+                <span>Habitudes</span>
+            </button>
+
+            <button class="nav-item" data-view="revisionView">
+                <span class="nav-icon">▤</span>
+                <span>Fiches de révision</span>
+            </button>
+
+            <button class="nav-item" data-view="planningView">
+                <span class="nav-icon">□</span>
+                <span>Planning</span>
+            </button>
+
+            <button class="nav-item" data-view="focusView">
+                <span class="nav-icon">◷</span>
+                <span>Focus</span>
+            </button>
+
+            <button class="nav-item" data-view="toolsView">
+                <span class="nav-icon">⌘</span>
+                <span>Outils</span>
+            </button>
+
+            <button class="nav-item" data-view="settingsView">
+                <span class="nav-icon">⚙</span>
+                <span>Paramètres</span>
+            </button>
+
+        </nav>
+
+        <div class="sidebar-bottom">
+        <!-- =====================================================
+             MODAL — CONFIRMATION DE SUPPRESSION
+             ===================================================== -->
+
+        <div
+            class="modal-overlay"
+            id="deleteConfirmModalOverlay"
+        >
+
+            <div class="modal delete-confirm-modal">
+
+                <button
+                    class="modal-close"
+                    id="closeDeleteConfirmModal"
+                    aria-label="Fermer"
+                >
+                    ×
+                </button>
+
+                <div class="modal-header">
+
+                    <span class="eyebrow">CONFIRMATION</span>
+
+                    <h2>Supprimer cette tâche ?</h2>
+
+                    <p>
+                        Cette action est définitive et ne pourra pas être annulée.
+                    </p>
+
+                </div>
+
+                <div class="modal-actions">
+                    <button
+                        type="button"
+                        class="secondary-button"
+                        id="cancelDeleteConfirm"
+                    >
+                        Annuler
+                    </button>
+
+                    <button
+                        type="button"
+                        class="delete-confirm-button"
+                        id="confirmDeleteTask"
+                    >
+                        Supprimer définitivement
+                    </button>
+                </div>
+
+            </div>
+
+        </div>
+
+
+            <div class="account-summary">
+                <span id="accountName">Mon espace</span>
+                <button class="logout-button" id="logoutButton" type="button">Déconnexion</button>
+            </div>
+            <span>v1.0</span>
+        </div>
+
+    </aside>
+
+
+    <!-- =====================================================
+         CONTENU PRINCIPAL
+         ===================================================== -->
+
+    <main class="main-content">
+
+
+        <!-- =================================================
+             KANBAN
+             ================================================= -->
+
+        <section class="view active" id="kanbanView">
+
+            <div class="page-header">
+
+                <div>
+                    <span class="eyebrow">ORGANISATION</span>
+                    <h1>Kanban</h1>
+                    <p>Organise tes tâches et avance étape par étape.</p>
+                </div>
+
+                <button class="primary-button" id="openTaskModal">
+                    <span>+</span>
+                    Nouvelle tâche
+                </button>
+
+            </div>
+
+
+            <div class="kanban-board">
+
+                <!-- A FAIRE -->
+                <div class="kanban-column" data-status="todo">
+
+                    <div class="column-header">
+                        <div>
+                            <h2>À faire</h2>
+                            <span class="task-count" id="todoCount">0</span>
+                        </div>
+                    </div>
+
+                    <div class="task-list" id="todoList"></div>
+
+                </div>
+
+
+                <!-- EN COURS -->
+                <div class="kanban-column" data-status="progress">
+
+                    <div class="column-header">
+                        <div>
+                            <h2>En cours</h2>
+                            <span class="task-count" id="progressCount">0</span>
+                        </div>
+                    </div>
+
+                    <div class="task-list" id="progressList"></div>
+
+                </div>
+
+
+                <!-- FAIT -->
+                <div class="kanban-column" data-status="done">
+
+                    <div class="column-header">
+                        <div>
+                            <h2>Fait</h2>
+                            <span class="task-count" id="doneCount">0</span>
+                        </div>
+
+                        <button class="archived-summary" id="openArchivedTasks" type="button" aria-label="Afficher les tâches archivées">
+                            <span class="archived-label">Archivées</span>
+                            <span class="task-count task-count-archived" id="archivedCount">0</span>
+                        </button>
+                    </div>
+
+                    <div class="done-bulk-toolbar">
+                        <span id="selectedDoneCount">0 sélectionnée</span>
+                        <button class="secondary-button" id="archiveSelectedTasks" type="button" disabled>
+                            Archiver la sélection
+                        </button>
+                    </div>
+
+                    <div class="task-list" id="doneList"></div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             HABITUDES
+             ================================================= -->
+
+        <section class="view" id="revisionView">
+
+            <div class="page-header">
+                <div>
+                    <span class="eyebrow">APPRENTISSAGE</span>
+                    <h1>Fiches de révision</h1>
+                    <p>Structure tes cours et retrouve rapidement les notions essentielles.</p>
+                </div>
+
+                <button class="primary-button" id="createRevisionSheet" type="button">
+                    <span>+</span>
+                    Nouvelle fiche
+                </button>
+            </div>
+
+            <div class="revision-workspace">
+                <aside class="revision-sidebar">
+                    <div class="revision-sidebar-header">
+                        <span class="eyebrow">MES FICHES</span>
+                        <span class="task-count" id="revisionSheetCount">0</span>
+                    </div>
+                    <div class="revision-sheet-list" id="revisionSheetList"></div>
+                    <p class="revision-empty-list" id="revisionEmptyList">Aucune fiche pour le moment.</p>
+                </aside>
+
+                <div class="revision-editor" id="revisionEditor">
+                    <div class="revision-editor-empty" id="revisionEditorEmpty">
+                        <span class="revision-empty-icon">▤</span>
+                        <h2>Commence une fiche</h2>
+                        <p>Crée une fiche pour organiser une matière, un chapitre ou une notion.</p>
+                        <button class="secondary-button" id="createRevisionSheetEmpty" type="button">Créer une fiche</button>
+                    </div>
+
+                    <div class="revision-editor-content" id="revisionEditorContent" hidden>
+                        <div class="revision-editor-header">
+                            <div>
+                                <span class="eyebrow">FICHE ACTIVE</span>
+                                <input class="revision-title-input" id="revisionTitleInput" type="text" maxlength="100" placeholder="Titre de la fiche">
+                                <input class="revision-subject-input" id="revisionSubjectInput" type="text" maxlength="80" placeholder="Matière ou chapitre">
+                            </div>
+                            <button class="delete-revision-button" id="deleteRevisionSheet" type="button">Supprimer</button>
+                        </div>
+
+                        <div class="revision-sections" id="revisionSections"></div>
+
+                        <button class="secondary-button revision-add-section" id="addRevisionSection" type="button">
+                            <span>+</span>
+                            Ajouter une sous-section
+                        </button>
+
+                        <p class="revision-save-status" id="revisionSaveStatus">Enregistrée automatiquement</p>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <section class="view" id="habitsView">
+
+            <div class="page-header">
+
+                <div>
+                    <span class="eyebrow">ROUTINE</span>
+                    <h1>Habitudes</h1>
+                    <p>Construis progressivement les habitudes qui comptent.</p>
+                </div>
+
+                <button class="primary-button" id="openHabitModal">
+                    <span>+</span>
+                    Nouvelle habitude
+                </button>
+
+            </div>
+
+
+            <!-- =============================================
+                 SLIDE TABLEAU
+                 ============================================= -->
+
+            <div class="habit-slide active" id="habitTableSlide">
+
+                <div class="habit-card">
+
+                    <div class="habit-card-top">
+
+                        <div>
+                            <h2>Cette semaine</h2>
+                            <p id="weekRange"></p>
+                        </div>
+
+                        <div class="habit-legend">
+                            <span class="legend-dot"></span>
+                            Complété
+                        </div>
+
+                    </div>
+
+
+                    <div class="table-wrapper">
+
+                        <table class="habit-table">
+
+                            <thead>
+                                <tr>
+                                    <th class="habit-name-header">
+                                        Habitude
+                                    </th>
+
+                                    <th>
+                                        <span class="weekday-short">Lun</span>
+                                        <span class="weekday-full">Lundi</span>
+                                        <small id="date-0"></small>
+                                    </th>
+
+                                    <th>
+                                        <span class="weekday-short">Mar</span>
+                                        <span class="weekday-full">Mardi</span>
+                                        <small id="date-1"></small>
+                                    </th>
+
+                                    <th>
+                                        <span class="weekday-short">Mer</span>
+                                        <span class="weekday-full">Mercredi</span>
+                                        <small id="date-2"></small>
+                                    </th>
+
+                                    <th>
+                                        <span class="weekday-short">Jeu</span>
+                                        <span class="weekday-full">Jeudi</span>
+                                        <small id="date-3"></small>
+                                    </th>
+
+                                    <th>
+                                        <span class="weekday-short">Ven</span>
+                                        <span class="weekday-full">Vendredi</span>
+                                        <small id="date-4"></small>
+                                    </th>
+
+                                    <th>
+                                        <span class="weekday-short">Sam</span>
+                                        <span class="weekday-full">Samedi</span>
+                                        <small id="date-5"></small>
+                                    </th>
+
+                                    <th>
+                                        <span class="weekday-short">Dim</span>
+                                        <span class="weekday-full">Dimanche</span>
+                                        <small id="date-6"></small>
+                                    </th>
+
+                                    <th class="percentage-header">
+                                        %
+                                    </th>
+                                </tr>
+                            </thead>
+
+
+                            <tbody id="habitTableBody"></tbody>
+
+
+                            <tfoot>
+                                <tr id="habitPercentageRow">
+
+                                    <td class="percentage-label">
+                                        Progression
+                                    </td>
+
+                                    <td>
+                                        <span
+                                            class="habit-percentage"
+                                            data-day-index="0"
+                                        >0%</span>
+                                    </td>
+
+                                    <td>
+                                        <span
+                                            class="habit-percentage"
+                                            data-day-index="1"
+                                        >0%</span>
+                                    </td>
+
+                                    <td>
+                                        <span
+                                            class="habit-percentage"
+                                            data-day-index="2"
+                                        >0%</span>
+                                    </td>
+
+                                    <td>
+                                        <span
+                                            class="habit-percentage"
+                                            data-day-index="3"
+                                        >0%</span>
+                                    </td>
+
+                                    <td>
+                                        <span
+                                            class="habit-percentage"
+                                            data-day-index="4"
+                                        >0%</span>
+                                    </td>
+
+                                    <td>
+                                        <span
+                                            class="habit-percentage"
+                                            data-day-index="5"
+                                        >0%</span>
+                                    </td>
+
+                                    <td>
+                                        <span
+                                            class="habit-percentage"
+                                            data-day-index="6"
+                                        >0%</span>
+                                    </td>
+
+                                    <td class="percentage-total">
+                                        —
+                                    </td>
+
+                                </tr>
+                            </tfoot>
+
+                        </table>
+
+
+                        <!-- Message quand aucune habitude n'existe -->
+
+                        <div
+                            class="empty-habits"
+                            id="emptyHabitsMessage"
+                        >
+                            <div class="empty-icon">○</div>
+
+                            <h3>Aucune habitude</h3>
+
+                            <p>
+                                Commence par ajouter une habitude
+                                à suivre cette semaine.
+                            </p>
+
+                            <button
+                                class="secondary-button"
+                                id="emptyHabitButton"
+                            >
+                                Ajouter une habitude
+                            </button>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Bouton vers le graphique -->
+
+                <button
+                    class="slide-arrow next"
+                    id="goToGraph"
+                    aria-label="Voir le graphique"
+                >
+                    →
+                </button>
+
+            </div>
+
+
+            <!-- =============================================
+     SLIDE GRAPHIQUE
+     ============================================= -->
+
+<div class="habit-slide" id="habitGraphSlide">
+
+    <div class="graph-card">
+
+        <div class="graph-header">
+
+            <div>
+                <span class="eyebrow">ÉVOLUTION</span>
+                <h2 id="graphMonthTitle">
+                    Septembre 2026
+                </h2>
+            </div>
+
+            <!-- Navigation entre les mois uniquement -->
+            <div class="graph-actions">
+
+                <button
+                    class="icon-button"
+                    id="previousMonth"
+                    aria-label="Mois précédent"
+                >
+                    ←
+                </button>
+
+                <button
+                    class="icon-button"
+                    id="nextMonth"
+                    aria-label="Mois suivant"
+                >
+                    →
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <div class="monthly-average">
+
+            <span>Moyenne du mois</span>
+
+            <strong id="monthlyAverage">
+                0%
+            </strong>
+
+        </div>
+
+
+        <div class="graph-container">
+
+            <svg
+                id="habitGraph"
+                viewBox="0 0 1000 400"
+                preserveAspectRatio="none"
+            ></svg>
+
+            <div
+                class="graph-tooltip"
+                id="graphTooltip"
+            ></div>
+
+        </div>
+
+
+        <div
+            class="graph-days"
+            id="graphDays"
+        ></div>
+
+    </div>
+
+
+    <!-- UNE SEULE flèche pour revenir au tableau -->
+
+    <button
+        class="slide-arrow previous"
+        id="goToTable"
+        aria-label="Retour aux habitudes"
+    >
+        ←
+    </button>
+
+</div>
+
+        </section>
+
+
+
+<!-- =========================
+     PLANNING
+========================= -->
+
+<section class="view" id="planningView">
+
+    <div class="page-header">
+        <div>
+            <span class="eyebrow">ORGANISATION</span>
+            <h1>Planning</h1>
+            <p>Organise ton temps et visualise tes échéances.</p>
+        </div>
+
+        <button class="primary-button" id="openPlanningModal" type="button">
+            <span>+</span>
+            Nouvel événement
+        </button>
+    </div>
+
+
+    <!-- NAVIGATION SEMAINE -->
+
+    <div class="planning-navigation">
+
+        <button
+            class="planning-nav-button"
+            id="previousPlanningWeek"
+            type="button"
+            aria-label="Semaine précédente"
+        >
+            ←
+        </button>
+
+        <button
+            class="planning-today-button"
+            id="planningToday"
+            type="button"
+        >
+            Aujourd'hui
+        </button>
+
+        <div
+            class="planning-week-title"
+            id="planningWeekTitle"
+        >
+            Semaine
+        </div>
+
+        <button
+            class="planning-nav-button"
+            id="nextPlanningWeek"
+            type="button"
+            aria-label="Semaine suivante"
+        >
+            →
+        </button>
+
+    </div>
+
+
+    <!-- CALENDRIER -->
+
+    <div class="planning-card">
+
+        <div class="planning-calendar">
+
+            <div class="planning-time-column">
+
+                <div class="planning-corner"></div>
+
+                <div id="planningTimeLabels"></div>
+
+            </div>
+
+            <div
+                class="planning-days"
+                id="planningDays"
+            ></div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ÉVÉNEMENTS À VENIR -->
+
+    <div class="planning-upcoming">
+
+        <div class="planning-section-header">
+
+            <div>
+                <span class="eyebrow">À VENIR</span>
+                <h2>Échéances</h2>
+            </div>
+
+            <span
+                class="planning-event-count"
+                id="planningEventCount"
+            >
+                0 événement
+            </span>
+
+        </div>
+
+
+        <div
+            class="planning-event-list"
+            id="planningEventList"
+        ></div>
+
+
+        <div
+            class="planning-empty"
+            id="planningEmpty"
+        >
+            <span>◷</span>
+
+            <p>Aucun événement à venir.</p>
+
+            <small>
+                Ajoute ton premier événement pour commencer ton planning.
+            </small>
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================
+     MODALE : NOUVEL ÉVÉNEMENT
+========================= -->
+
+<div
+    class="planning-modal-overlay"
+    id="planningModalOverlay"
+>
+
+    <div
+        class="planning-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="planningModalTitle"
+    >
+
+        <button
+            class="planning-modal-close"
+            id="closePlanningModal"
+            type="button"
+            aria-label="Fermer"
+        >
+            ×
+        </button>
+
+        <div class="planning-modal-header">
+
+            <span class="eyebrow">PLANNING</span>
+
+            <h2 id="planningModalTitle">
+                Nouvel événement
+            </h2>
+
+            <p>
+                Ajoute quelque chose à ton emploi du temps.
+            </p>
+
+        </div>
+
+
+        <form id="planningEventForm">
+
+            <div class="form-field">
+
+                <label for="planningEventName">
+                    Nom de l'événement
+                </label>
+
+                <input
+                    type="text"
+                    id="planningEventName"
+                    placeholder="Ex. Réviser les maths"
+                    maxlength="80"
+                    autocomplete="off"
+                    required
+                >
+
+            </div>
+
+
+            <div class="planning-form-grid">
+
+                <div class="form-field">
+
+                    <label for="planningEventDate">
+                        Date
+                    </label>
+
+                    <input
+                        type="date"
+                        id="planningEventDate"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-field">
+
+                    <label for="planningEventStart">
+                        Début
+                    </label>
+
+                    <input
+                        type="time"
+                        id="planningEventStart"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-field">
+
+                    <label for="planningEventEnd">
+                        Échéance
+                    </label>
+
+                    <input
+                        type="time"
+                        id="planningEventEnd"
+                        required
+                    >
+
+                </div>
+
+            </div>
+
+
+            <div class="form-field">
+
+                <label for="planningEventDescription">
+                    Description
+                </label>
+
+                <textarea
+                    id="planningEventDescription"
+                    placeholder="Optionnel..."
+                    maxlength="300"
+                    rows="3"
+                ></textarea>
+
+            </div>
+
+
+            <div class="planning-modal-actions">
+
+                <button
+                    type="button"
+                    class="secondary-button"
+                    id="cancelPlanningModal"
+                >
+                    Annuler
+                </button>
+
+                <button
+                    type="submit"
+                    class="primary-button"
+                >
+                    Créer
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     MENU AU CLIC SUR ÉVÉNEMENT
+========================= -->
+
+<div
+    class="planning-event-menu"
+    id="planningEventMenu"
+>
+
+    <button
+        type="button"
+        id="planningRenameEvent"
+    >
+        <span>✎</span>
+        Renommer
+    </button>
+
+    <button
+        type="button"
+        id="planningDeleteEvent"
+        class="planning-menu-delete"
+    >
+        <span>⌫</span>
+        Supprimer
+    </button>
+
+</div>
+
+
+<!-- =========================
+     MODALE RENOMMER
+========================= -->
+
+<div
+    class="planning-modal-overlay"
+    id="planningRenameOverlay"
+>
+
+    <div
+        class="planning-modal planning-small-modal"
+        role="dialog"
+        aria-modal="true"
+    >
+
+        <button
+            class="planning-modal-close"
+            id="closePlanningRename"
+            type="button"
+            aria-label="Fermer"
+        >
+            ×
+        </button>
+
+        <div class="planning-modal-header">
+
+            <span class="eyebrow">MODIFICATION</span>
+
+            <h2>Renommer</h2>
+
+            <p>
+                Modifie le nom de ton événement.
+            </p>
+
+        </div>
+
+
+        <div class="form-field">
+
+            <label for="planningRenameInput">
+                Nom de l'événement
+            </label>
+
+            <input
+                type="text"
+                id="planningRenameInput"
+                maxlength="80"
+                autocomplete="off"
+            >
+
+        </div>
+
+
+        <div class="planning-modal-actions">
+
+            <button
+                type="button"
+                class="secondary-button"
+                id="cancelPlanningRename"
+            >
+                Annuler
+            </button>
+
+            <button
+                type="button"
+                class="primary-button"
+                id="savePlanningRename"
+            >
+                Enregistrer
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     MODALE SUPPRESSION
+========================= -->
+
+<div
+    class="planning-modal-overlay"
+    id="planningDeleteOverlay"
+>
+
+    <div
+        class="planning-modal planning-small-modal"
+        role="dialog"
+        aria-modal="true"
+    >
+
+        <button
+            class="planning-modal-close"
+            id="closePlanningDelete"
+            type="button"
+            aria-label="Fermer"
+        >
+            ×
+        </button>
+
+        <div class="planning-modal-header">
+
+            <span class="eyebrow">SUPPRESSION</span>
+
+            <h2>Supprimer l'événement ?</h2>
+
+            <p id="planningDeleteMessage">
+                Cette action est définitive.
+            </p>
+
+        </div>
+
+
+        <div class="planning-modal-actions">
+
+            <button
+                type="button"
+                class="secondary-button"
+                id="cancelPlanningDelete"
+            >
+                Annuler
+            </button>
+
+            <button
+                type="button"
+                class="planning-danger-button"
+                id="confirmPlanningDelete"
+            >
+                Supprimer
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+        <!-- =================================================
+     FOCUS
+     ================================================= -->
+
+<section class="view" id="focusView">
+
+    <div class="page-header">
+
+        <div>
+
+            <span class="eyebrow">CONCENTRATION</span>
+
+            <h1>Focus</h1>
+
+            <p>
+                Consacre ton temps à ce qui compte vraiment.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- =================================================
+         TIMER PRINCIPAL
+         ================================================= -->
+
+    <div class="focus-main-card">
+
+        <div class="focus-status" id="focusStatus">
+            PRÊT À COMMENCER
+        </div>
+
+
+        <div class="focus-timer-wrapper">
+
+            <div
+                class="focus-ring"
+                id="focusRing"
+            >
+
+                <div class="focus-ring-inner">
+
+                    <span
+                        class="focus-session-name"
+                        id="focusSessionName"
+                    >
+                        Aucune session
+                    </span>
+
+                    <strong
+                        class="focus-time"
+                        id="focusTime"
+                    >
+                        00:00
+                    </strong>
+
+                    <span
+                        class="focus-minute"
+                        id="focusMinute"
+                    >
+                        0 min
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             CONTROLES
+             ================================================= -->
+
+        <div class="focus-controls">
+
+            <button
+                class="primary-button focus-start-button"
+                id="startFocusButton"
+            >
+                <span>▶</span>
+                Débuter la session
+            </button>
+
+
+            <button
+                class="secondary-button focus-control-button"
+                id="pauseFocusButton"
+                hidden
+            >
+                Pause
+            </button>
+
+
+            <button
+                class="primary-button focus-finish-button"
+                id="finishFocusButton"
+                hidden
+            >
+                Terminer
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- =================================================
+         HISTORIQUE + STATS
+         ================================================= -->
+
+    <div class="focus-dashboard">
+
+
+        <!-- HISTORIQUE -->
+
+        <div class="focus-history-card">
+
+            <div class="focus-section-header">
+
+                <div>
+
+                    <span class="eyebrow">
+                        HISTORIQUE
+                    </span>
+
+                    <h2>
+                        Tes sessions
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <div
+                class="focus-history-list"
+                id="focusHistoryList"
+            ></div>
+
+
+            <div
+                class="focus-empty-history"
+                id="focusEmptyHistory"
+            >
+
+                <span>◷</span>
+
+                <p>
+                    Tes sessions terminées
+                    apparaîtront ici.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- STATS -->
+
+        <div class="focus-stats-card">
+
+            <div class="focus-section-header">
+
+                <div>
+
+                    <span class="eyebrow">
+                        STATISTIQUES
+                    </span>
+
+                    <h2>
+                        Temps travaillé
+                    </h2>
+
+                </div>
+
+                <span
+                    class="focus-total-time"
+                    id="focusTotalTime"
+                >
+                    0h
+                </span>
+
+            </div>
+
+
+            <div
+                class="focus-chart"
+                id="focusChart"
+            ></div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- =================================================
+     PLANNING
+     ================================================= -->
+
+
+
+
+        <!-- =================================================
+             OUTILS
+             ================================================= -->
+
+        <section class="view" id="toolsView">
+
+            <div class="page-header">
+
+                <div>
+                    <span class="eyebrow">PRODUCTIVITÉ</span>
+                    <h1>Outils</h1>
+                    <p>Tout ce dont tu as besoin dans un seul espace.</p>
+                </div>
+
+            </div>
+
+            <div class="tools-grid">
+
+                <div class="tool-card pomodoro-card" id="pomodoroCard">
+
+    <div class="tool-card-top">
+        <span class="tool-icon">◷</span>
+
+        <span class="pomodoro-phase" id="pomodoroPhase">
+            TRAVAIL
+        </span>
+    </div>
+
+    <h3>Pomodoro</h3>
+
+    <p>
+        Alterne automatiquement entre travail et repos.
+    </p>
+
+    <div class="pomodoro-settings">
+
+        <div class="pomodoro-setting">
+            <label for="pomodoroWorkDuration">
+                Travail
+            </label>
+
+            <div class="pomodoro-number">
+                <input
+                    type="number"
+                    id="pomodoroWorkDuration"
+                    min="1"
+                    max="180"
+                    value="25"
+                >
+                <span>min</span>
+            </div>
+        </div>
+
+        <div class="pomodoro-setting">
+            <label for="pomodoroBreakDuration">
+                Repos
+            </label>
+
+            <div class="pomodoro-number">
+                <input
+                    type="number"
+                    id="pomodoroBreakDuration"
+                    min="1"
+                    max="60"
+                    value="5"
+                >
+                <span>min</span>
+            </div>
+        </div>
+
+    </div>
+
+    <div
+        class="pomodoro-timer"
+        id="pomodoroTimer"
+    >
+        25:00
+    </div>
+
+    <div class="pomodoro-cycles">
+        Cycle <span id="pomodoroCycle">1</span>
+    </div>
+
+    <div class="pomodoro-controls">
+
+        <button
+            class="primary-button"
+            id="pomodoroStart"
+        >
+            Démarrer
+        </button>
+
+        <button
+            class="secondary-button"
+            id="pomodoroFinish"
+            hidden
+        >
+            Finir la session
+        </button>
+
+    </div>
+
+</div>
+
+                <div class="tool-card wheel-card" id="wheelCard">
+
+                    <div class="tool-card-top">
+                        <span class="tool-icon">◉</span>
+                        <span class="wheel-status" id="wheelStatus">
+                            PRÊTE À TOURNER
+                        </span>
+                    </div>
+
+                    <h3>Roue de la fortune</h3>
+
+                    <p>
+                        Ajoute tes issues et laisse le hasard choisir.
+                    </p>
+
+                    <div class="wheel-stage">
+                        <span class="wheel-pointer" aria-hidden="true"></span>
+                        <div
+                            class="fortune-wheel"
+                            id="fortuneWheel"
+                            aria-label="Roue de la fortune"
+                        ></div>
+                    </div>
+
+                    <div class="wheel-result" aria-live="polite">
+                        <span>Résultat</span>
+                        <strong id="wheelResult">Ajoute au moins deux issues</strong>
+                    </div>
+
+                    <div class="wheel-add-form">
+                        <label class="sr-only" for="wheelIssueInput">
+                            Nouvelle issue
+                        </label>
+                        <input
+                            type="text"
+                            id="wheelIssueInput"
+                            maxlength="60"
+                            placeholder="Ex. Réviser les maths"
+                            autocomplete="off"
+                        >
+                        <button
+                            class="secondary-button"
+                            id="addWheelIssue"
+                            type="button"
+                        >
+                            Ajouter
+                        </button>
+                    </div>
+
+                    <div
+                        class="wheel-issues"
+                        id="wheelIssues"
+                        aria-live="polite"
+                    ></div>
+
+                    <button
+                        class="primary-button wheel-spin-button"
+                        id="spinWheel"
+                        type="button"
+                    >
+                        Faire tourner
+                    </button>
+
+                </div>
+
+                <div class="tool-card inbox-card" id="inboxCard">
+
+                    <div class="tool-card-top inbox-card-header">
+                        <span class="tool-icon">✎</span>
+                        <span class="inbox-count" id="inboxCount">0 idée</span>
+                    </div>
+
+                    <h3>Inbox rapide</h3>
+
+                    <p>
+                        Capture ce qui te traverse l'esprit avant de le traiter plus tard.
+                    </p>
+
+                    <form class="inbox-form" id="inboxForm">
+                        <label class="sr-only" for="inboxInput">
+                            Nouvelle idée
+                        </label>
+                        <input
+                            type="text"
+                            id="inboxInput"
+                            maxlength="120"
+                            placeholder="Ex. Appeler le professeur"
+                            autocomplete="off"
+                        >
+                        <button
+                            class="primary-button"
+                            type="submit"
+                        >
+                            Capturer
+                        </button>
+                    </form>
+
+                    <div
+                        class="inbox-list"
+                        id="inboxList"
+                        aria-live="polite"
+                    ></div>
+
+                    <button
+                        class="secondary-button inbox-clear"
+                        id="clearInbox"
+                        type="button"
+                    >
+                        Vider l'inbox
+                    </button>
+
+                </div>
+
+                <div class="tool-card priorities-card" id="prioritiesCard">
+
+                    <div class="tool-card-top priorities-card-header">
+                        <span class="tool-icon">◆</span>
+                        <span class="priorities-progress" id="prioritiesProgress">
+                            0 / 3
+                        </span>
+                    </div>
+
+                    <h3>Top 3 du jour</h3>
+
+                    <p>
+                        Choisis trois priorités réalistes pour avancer sans te disperser.
+                    </p>
+
+                    <form class="priorities-form" id="prioritiesForm">
+                        <label class="sr-only" for="priorityInput">
+                            Ajouter une priorité
+                        </label>
+                        <input
+                            type="text"
+                            id="priorityInput"
+                            maxlength="80"
+                            placeholder="Ex. Finaliser le dossier"
+                            autocomplete="off"
+                        >
+                        <button
+                            class="primary-button"
+                            type="submit"
+                            id="addPriority"
+                        >
+                            Ajouter
+                        </button>
+                    </form>
+
+                    <div
+                        class="priorities-list"
+                        id="prioritiesList"
+                        aria-live="polite"
+                    ></div>
+
+                    <button
+                        class="secondary-button priorities-reset"
+                        id="resetPriorities"
+                        type="button"
+                    >
+                        Réinitialiser la journée
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- =================================================
+             PARAMÈTRES
+             ================================================= -->
+
+        <section class="view" id="settingsView">
+
+            <div class="page-header">
+                <div>
+                    <span class="eyebrow">PERSONNALISATION</span>
+                    <h1>Paramètres</h1>
+                    <p>Adapte Work Up à ta façon de travailler.</p>
+                </div>
+            </div>
+
+            <div class="settings-layout">
+
+                <div class="settings-card">
+                    <div class="settings-card-header">
+                        <span class="eyebrow">APPARENCE</span>
+                        <h2>Ton espace</h2>
+                    </div>
+
+                    <div class="settings-list">
+
+                        <label class="setting-row">
+                            <span class="setting-copy">
+                                <strong>Animations réduites</strong>
+                                <small>Limite les transitions et les mouvements.</small>
+                            </span>
+                            <input class="setting-toggle" type="checkbox" id="reducedMotionSetting">
+                        </label>
+
+                        <label class="setting-row setting-row-select">
+                            <span class="setting-copy">
+                                <strong>Densité</strong>
+                                <small>Choisis l'espace entre les éléments.</small>
+                            </span>
+                            <select id="densitySetting">
+                                <option value="comfortable">Confortable</option>
+                                <option value="compact">Compacte</option>
+                            </select>
+                        </label>
+
+                    </div>
+                </div>
+
+                <div class="settings-card">
+                    <div class="settings-card-header">
+                        <span class="eyebrow">COMPORTEMENT</span>
+                        <h2>Préférences</h2>
+                    </div>
+
+                    <div class="settings-list">
+
+                        <label class="setting-row">
+                            <span class="setting-copy">
+                                <strong>Rappels locaux</strong>
+                                <small>Autorise les rappels visuels dans l'application.</small>
+                            </span>
+                            <input class="setting-toggle" type="checkbox" id="notificationsSetting">
+                        </label>
+
+                        <label class="setting-row">
+                            <span class="setting-copy">
+                                <strong>Confirmer les suppressions</strong>
+                                <small>Demande une confirmation avant d'effacer un élément.</small>
+                            </span>
+                            <input class="setting-toggle" type="checkbox" id="confirmDeleteSetting" checked>
+                        </label>
+
+                    </div>
+
+                    <div class="settings-actions">
+                        <button class="secondary-button" id="resetSettings" type="button">
+                            Réinitialiser les préférences
+                        </button>
+                        <button class="secondary-button" id="exportAppData" type="button">
+                            Exporter mes données
+                        </button>
+                        <button class="secondary-button" id="importAppData" type="button">
+                            Importer mes données
+                        </button>
+                        <input id="importAppDataFile" type="file" accept="application/json" hidden>
+                        <button class="settings-danger-button" id="clearAppData" type="button">
+                            Effacer toutes les données
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            <p class="settings-save-status" id="settingsSaveStatus" aria-live="polite">
+                Les préférences sont enregistrées automatiquement.
+            </p>
+
+        </section>
+
+    </main>
+
+
+    <div class="modal-overlay" id="revisionDeleteConfirmOverlay">
+
+        <div class="modal delete-confirm-modal">
+
+            <button
+                class="modal-close"
+                id="closeRevisionDeleteConfirm"
+                type="button"
+                aria-label="Fermer"
+            >
+                ×
+            </button>
+
+            <div class="modal-header">
+                <span class="eyebrow">CONFIRMATION</span>
+                <h2>Supprimer cette fiche ?</h2>
+                <p>Cette action est définitive et ne pourra pas être annulée.</p>
+            </div>
+
+            <div class="modal-actions">
+                <button
+                    type="button"
+                    class="secondary-button"
+                    id="cancelRevisionDeleteConfirm"
+                >
+                    Annuler
+                </button>
+
+                <button
+                    type="button"
+                    class="delete-confirm-button"
+                    id="confirmRevisionDelete"
+                >
+                    Supprimer définitivement
+                </button>
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         MODAL — NOUVELLE TÂCHE
+         ===================================================== -->
+
+    <div
+        class="modal-overlay"
+        id="taskModalOverlay"
+    >
+
+        <div class="modal">
+
+            <button
+                class="modal-close"
+                id="closeTaskModal"
+                aria-label="Fermer"
+            >
+                ×
+            </button>
+
+            <div class="modal-header">
+
+                <span class="eyebrow">KANBAN</span>
+
+                <h2>Nouvelle tâche</h2>
+
+                <p>
+                    Ajoute une tâche à ton espace de travail.
+                </p>
+
+            </div>
+
+
+            <form id="taskForm">
+
+                <div class="form-field">
+
+                    <label for="taskName">
+                        Nom de la tâche
+                    </label>
+
+                    <input
+                        type="text"
+                        id="taskName"
+                        placeholder="Ex. Terminer mon projet"
+                        maxlength="80"
+                        autocomplete="off"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-field">
+
+                    <label for="taskUrgency">
+                        Urgence
+                    </label>
+
+                    <select id="taskUrgency">
+
+                        <option value="low">
+                            Faible
+                        </option>
+
+                        <option value="medium" selected>
+                            Moyenne
+                        </option>
+
+                        <option value="high">
+                            Urgente
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="modal-actions">
+
+                    <button
+                        type="button"
+                        class="secondary-button"
+                        id="cancelTaskModal"
+                    >
+                        Annuler
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="primary-button"
+                    >
+                        Ajouter
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         MODAL — DÉTAILS D'UNE TÂCHE
+         ===================================================== -->
+
+    <div
+        class="modal-overlay"
+        id="taskDetailsModalOverlay"
+    >
+
+        <div class="modal task-details-modal">
+
+            <button
+                class="modal-close"
+                id="closeTaskDetailsModal"
+                aria-label="Fermer"
+            >
+                ×
+            </button>
+
+            <div class="modal-header">
+                <span class="eyebrow">KANBAN</span>
+                <h2>Détails de la tâche</h2>
+                <p>Ajoute du contexte pour mieux avancer.</p>
+            </div>
+
+            <form id="taskDetailsForm">
+
+                <div class="form-field">
+                    <label for="taskDetailsName">Nom de la tâche</label>
+                    <input type="text" id="taskDetailsName" maxlength="80" required>
+                </div>
+
+                <div class="form-field">
+                    <label for="taskDetailsUrgency">Urgence</label>
+                    <select id="taskDetailsUrgency">
+                        <option value="low">Faible</option>
+                        <option value="medium">Moyenne</option>
+                        <option value="high">Urgente</option>
+                    </select>
+                </div>
+
+                <div class="form-field">
+                    <label for="taskDetailsDescription">Description</label>
+                    <textarea id="taskDetailsDescription" rows="3" maxlength="500" placeholder="Contexte, résultat attendu..."></textarea>
+                </div>
+
+                <div class="form-field">
+                    <label for="taskDetailsTags">Tags</label>
+                    <input type="text" id="taskDetailsTags" maxlength="120" placeholder="études, important, projet">
+                </div>
+
+                <div class="form-field">
+                    <label for="taskDetailsSubtasks">Sous-tâches</label>
+                    <textarea id="taskDetailsSubtasks" rows="4" maxlength="500" placeholder="Une sous-tâche par ligne"></textarea>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="secondary-button" id="cancelTaskDetails">Annuler</button>
+                    <button type="submit" class="primary-button">Enregistrer</button>
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         MODAL — TÂCHES ARCHIVÉES
+         ===================================================== -->
+
+    <div
+        class="modal-overlay"
+        id="archivedTasksModalOverlay"
+    >
+
+        <div class="modal archived-modal">
+
+            <button
+                class="modal-close"
+                id="closeArchivedTasksModal"
+                aria-label="Fermer"
+            >
+                ×
+            </button>
+
+            <div class="modal-header">
+
+                <span class="eyebrow">KANBAN</span>
+
+                <h2>Tâches archivées</h2>
+
+                <p>
+                    Retrouvez les tâches terminées mises de côté.
+                </p>
+
+            </div>
+
+            <div class="archived-controls">
+                <label class="visually-hidden" for="archivedSearch">Rechercher dans les tâches archivées</label>
+                <input type="search" id="archivedSearch" placeholder="Rechercher une tâche..." autocomplete="off">
+
+                <label class="visually-hidden" for="archivedUrgencyFilter">Filtrer par urgence</label>
+                <select id="archivedUrgencyFilter">
+                    <option value="all">Toutes les urgences</option>
+                    <option value="high">Urgentes</option>
+                    <option value="medium">Moyennes</option>
+                    <option value="low">Faibles</option>
+                </select>
+
+                <label class="visually-hidden" for="archivedSort">Trier les archives</label>
+                <select id="archivedSort">
+                    <option value="newest">Plus récentes</option>
+                    <option value="oldest">Plus anciennes</option>
+                    <option value="name">Nom</option>
+                </select>
+            </div>
+
+            <div class="archived-task-list" id="archivedTaskList"></div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         MODAL — NOUVELLE HABITUDE
+         ===================================================== -->
+
+    <div
+        class="modal-overlay"
+        id="habitModalOverlay"
+    >
+
+        <div class="modal habit-modal">
+
+            <button
+                class="modal-close"
+                id="closeHabitModal"
+                aria-label="Fermer"
+            >
+                ×
+            </button>
+
+            <div class="modal-header">
+
+                <span class="eyebrow">HABITUDES</span>
+
+                <h2>Nouvelle habitude</h2>
+
+                <p>
+                    Ajoute quelque chose que tu souhaites
+                    suivre régulièrement.
+                </p>
+
+            </div>
+
+
+            <form id="habitForm">
+
+                <div class="form-field habit-input-field">
+
+                    <label for="habitName">
+                        Nom de l'habitude
+                    </label>
+
+                    <div class="input-with-icon">
+
+                        <span>○</span>
+
+                        <input
+                            type="text"
+                            id="habitName"
+                            placeholder="Ex. Lire 20 minutes"
+                            maxlength="50"
+                            autocomplete="off"
+                            required
+                        >
+
+                    </div>
+
+                    <small>
+                        Elle apparaîtra automatiquement dans ton tableau.
+                    </small>
+
+                </div>
+
+
+                <div class="modal-actions">
+
+                    <button
+                        type="button"
+                        class="secondary-button"
+                        id="cancelHabitModal"
+                    >
+                        Annuler
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="primary-button"
+                    >
+                        Ajouter
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+<!-- =========================================================
+     MODALE — NOUVELLE SESSION FOCUS
+     ========================================================= -->
+
+<div
+    class="focus-modal-overlay"
+    id="focusModalOverlay"
+>
+
+    <div
+        class="focus-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="focusModalTitle"
+    >
+
+        <div class="focus-modal-header">
+
+            <div>
+
+                <span class="eyebrow">
+                    NOUVELLE SESSION
+                </span>
+
+                <h2 id="focusModalTitle">
+                    Sur quoi veux-tu travailler ?
+                </h2>
+
+            </div>
+
+            <button
+                class="focus-modal-close"
+                id="closeFocusModal"
+                type="button"
+                aria-label="Fermer"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <form id="focusSessionForm">
+
+            <div class="focus-input-wrapper">
+
+                <label for="focusSessionInput">
+                    Nom de la session
+                </label>
+
+                <input
+                    type="text"
+                    id="focusSessionInput"
+                    name="focusSession"
+                    placeholder="Ex. Révision de maths"
+                    maxlength="60"
+                    autocomplete="off"
+                    required
+                >
+
+                <span class="focus-input-hint">
+                    Donne un nom à cette session pour la retrouver dans ton historique.
+                </span>
+
+            </div>
+
+
+            <div class="focus-modal-actions">
+
+                <button
+                    type="button"
+                    class="secondary-button"
+                    id="cancelFocusModal"
+                >
+                    Annuler
+                </button>
+
+                <button
+                    type="submit"
+                    class="primary-button"
+                >
+                    Commencer
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="script.js"></script>
+
+</body>
+
+</html>

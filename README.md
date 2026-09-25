@@ -1,0 +1,59 @@
+# Work Up
+
+Work Up est un outil personnel d'organisation avec kanban, habitudes, planning, focus et outils de productivite.
+
+## Etat actuel
+
+Le projet fonctionne comme un site statique et peut etre publie avec GitHub Pages. L'authentification et la synchronisation utilisent Supabase Auth et la table `user_data`. Chaque compte ne peut lire et modifier que ses propres donnees grace aux policies RLS.
+
+Les donnees peuvent etre sauvegardees depuis **Parametres > Exporter mes donnees** puis restaurees avec **Importer mes donnees**.
+
+## Publier une demo avec GitHub Pages
+
+1. Creer un depot GitHub public ou prive.
+2. Ajouter les fichiers du projet a la branche `main`.
+3. Dans **Settings > Pages**, choisir **Deploy from a branch**, puis `main` et `/ (root)`.
+4. Ouvrir l'URL fournie par GitHub Pages.
+
+Le site ne contient aucun secret serveur et peut etre servi comme fichiers statiques.
+
+## Configuration Supabase
+
+GitHub Pages ne fournit ni comptes ni base de donnees. Le projet utilise deja Supabase. Dans le SQL Editor de Supabase, executer :
+
+```sql
+create table user_data (
+	user_id uuid primary key references auth.users(id) on delete cascade,
+	data jsonb not null default '{}'::jsonb,
+	updated_at timestamptz not null default now()
+);
+
+alter table user_data enable row level security;
+
+create policy "Users can read their own data"
+on user_data for select using (auth.uid() = user_id);
+
+create policy "Users can insert their own data"
+on user_data for insert with check (auth.uid() = user_id);
+
+create policy "Users can update their own data"
+on user_data for update using (auth.uid() = user_id);
+```
+
+Pour utiliser le meme compte sur telephone et ordinateur :
+
+- Supabase Auth gere l'inscription et la connexion ;
+- la table `user_data` stocke les donnees dans une colonne JSONB ;
+- les policies RLS limitent chaque ligne a `auth.uid()` ;
+- le navigateur garde seulement un cache local et synchronise les changements.
+
+La configuration publique Supabase se trouve dans `supabase-config.js` :
+
+```js
+window.WORK_UP_SUPABASE = {
+	url: "https://ton-projet.supabase.co",
+	anonKey: "ta-cle-publique"
+};
+```
+
+Ne jamais mettre une cle privee ou une cle de service dans les fichiers publies. Une cle publique Supabase peut etre presente cote navigateur uniquement avec des policies RLS correctement configurees.
