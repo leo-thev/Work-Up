@@ -1718,6 +1718,22 @@ function createTaskCard(task) {
         `
         : "";
 
+    const mobileMoveActions = task.status === "archived"
+        ? ""
+        : `
+            <div class="mobile-task-move" aria-label="Déplacer la tâche">
+                ${task.status !== "todo"
+                    ? `<button type="button" data-move-status="todo">À faire</button>`
+                    : ""}
+                ${task.status !== "progress"
+                    ? `<button type="button" data-move-status="progress">En cours</button>`
+                    : ""}
+                ${task.status !== "done"
+                    ? `<button type="button" data-move-status="done">Fait</button>`
+                    : ""}
+            </div>
+        `;
+
     const taskDescription = task.description
         ? `<div class="task-description">${escapeHTML(task.description)}</div>`
         : "";
@@ -1739,6 +1755,8 @@ function createTaskCard(task) {
 
         ${taskDescription}
         ${taskTags}
+
+        ${mobileMoveActions}
 
         ${task.status === "archived"
             ? `<div class="task-archived-date">Archivée le ${formatTaskDate(task.archivedAt || task.createdAt)}</div>`
@@ -1872,6 +1890,25 @@ function createTaskCard(task) {
             )
         );
     }
+
+    card.querySelectorAll("[data-move-status]").forEach(
+        moveButton => moveButton.addEventListener(
+            "click",
+            event => {
+                event.stopPropagation();
+
+                task.status = moveButton.dataset.moveStatus;
+                task.archivedAt = null;
+
+                saveStorage(
+                    STORAGE_KEYS.tasks,
+                    tasks
+                );
+
+                renderTasks();
+            }
+        )
+    );
 
 
     card.addEventListener(

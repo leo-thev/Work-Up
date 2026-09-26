@@ -1145,6 +1145,10 @@ select:focus-visible {
     color: #333;
 }
 
+.mobile-task-move {
+    display: none;
+}
+
 
 /* =========================================================
    HABIT TABLE
@@ -2855,6 +2859,54 @@ select:focus-visible {
     .habit-card,
     .graph-card {
         padding: 17px;
+    }
+
+    .graph-days {
+        display: none;
+    }
+
+    .inbox-form,
+    .priorities-form {
+        flex-direction: column;
+        gap: 9px;
+    }
+
+    .inbox-form input,
+    .inbox-form .primary-button,
+    .priorities-form input,
+    .priorities-form .primary-button {
+        width: 100%;
+        height: 42px;
+    }
+
+    .delete-task {
+        position: relative;
+        z-index: 2;
+        opacity: 1;
+        touch-action: manipulation;
+    }
+
+    .mobile-task-move {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 12px;
+    }
+
+    .mobile-task-move button {
+        min-height: 30px;
+        padding: 5px 8px;
+        color: #555;
+        background: #f4f4f2;
+        border: 1px solid #e6e6e3;
+        border-radius: 7px;
+        font-size: 10px;
+        cursor: pointer;
+        touch-action: manipulation;
+    }
+
+    .mobile-task-move button:active {
+        background: #e7e7e4;
     }
 
     .weekday-full {
