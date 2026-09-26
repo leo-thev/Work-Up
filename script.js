@@ -5743,6 +5743,9 @@ const prioritiesProgress =
 const resetPrioritiesButton =
     document.getElementById("resetPriorities");
 
+const addPriorityButton =
+    document.getElementById("addPriority");
+
 const todayPriorityKey =
     getFocusDateKey();
 
@@ -5869,32 +5872,41 @@ function updatePrioritiesProgress() {
 }
 
 
+function addDailyPriority() {
+    const text = priorityInput.value.trim();
+
+    if (
+        !text ||
+        dailyPriorities.items.length >= 3
+    ) {
+        return;
+    }
+
+    dailyPriorities.items.push({
+        text,
+        done: false
+    });
+
+    saveDailyPriorities();
+    priorityInput.value = "";
+    renderDailyPriorities();
+    priorityInput.focus();
+}
+
 if (prioritiesForm) {
     prioritiesForm.addEventListener(
         "submit",
         event => {
             event.preventDefault();
-
-            const text =
-                priorityInput.value.trim();
-
-            if (
-                !text ||
-                dailyPriorities.items.length >= 3
-            ) {
-                return;
-            }
-
-            dailyPriorities.items.push({
-                text,
-                done: false
-            });
-
-            saveDailyPriorities();
-            priorityInput.value = "";
-            renderDailyPriorities();
-            priorityInput.focus();
+            addDailyPriority();
         }
+    );
+}
+
+if (addPriorityButton) {
+    addPriorityButton.addEventListener(
+        "click",
+        addDailyPriority
     );
 }
 
@@ -5933,6 +5945,9 @@ const inboxCount =
 
 const clearInboxButton =
     document.getElementById("clearInbox");
+
+const captureInboxButton =
+    document.getElementById("captureInbox");
 
 let inboxItems = loadStorage(
     INBOX_STORAGE_KEY,
@@ -6009,25 +6024,35 @@ function renderInbox() {
 }
 
 
+function captureInboxItem() {
+    const item = inboxInput.value.trim();
+
+    if (!item) {
+        inboxInput.focus();
+        return;
+    }
+
+    inboxItems.unshift(item);
+    saveInbox();
+    inboxInput.value = "";
+    renderInbox();
+    inboxInput.focus();
+}
+
 if (inboxForm) {
     inboxForm.addEventListener(
         "submit",
         event => {
             event.preventDefault();
-
-            const item = inboxInput.value.trim();
-
-            if (!item) {
-                inboxInput.focus();
-                return;
-            }
-
-            inboxItems.unshift(item);
-            saveInbox();
-            inboxInput.value = "";
-            renderInbox();
-            inboxInput.focus();
+            captureInboxItem();
         }
+    );
+}
+
+if (captureInboxButton) {
+    captureInboxButton.addEventListener(
+        "click",
+        captureInboxItem
     );
 }
 
