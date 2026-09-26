@@ -1151,7 +1151,18 @@ if (testPushNotificationButton) {
             });
 
             if (error) {
-                throw error;
+                let errorMessage = error.message;
+
+                if (error.context) {
+                    try {
+                        const responseBody = await error.context.json();
+                        errorMessage = responseBody.error || errorMessage;
+                    } catch (parseError) {
+                        console.warn("Réponse d'erreur Push illisible", parseError);
+                    }
+                }
+
+                throw new Error(errorMessage);
             }
 
             updateNotificationPermissionStatus("Notification envoyée.");
