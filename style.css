@@ -505,8 +505,9 @@ select:focus-visible {
 .revision-section-content {
     width: 100%;
     min-height: 120px;
+    overflow: hidden;
     padding: 11px 12px;
-    resize: vertical;
+    resize: none;
     color: var(--text);
     background: #fff;
     border: 1px solid var(--border);
