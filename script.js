@@ -668,7 +668,6 @@ function updateRevisionEditor() {
         sectionContent.value = section.content || "";
         sectionContent.placeholder = "Écris ici les notions, définitions, exemples ou questions à retenir...";
         sectionContent.readOnly = revisionReadMode;
-        resizeRevisionContent(sectionContent);
 
         const collapseSection = document.createElement("button");
         collapseSection.className = "collapse-revision-section";
@@ -693,6 +692,8 @@ function updateRevisionEditor() {
         sectionHeader.append(collapseSection);
         sectionElement.append(sectionHeader, sectionContent);
         revisionSections.appendChild(sectionElement);
+        resizeRevisionContent(sectionContent);
+        requestAnimationFrame(() => resizeRevisionContent(sectionContent));
     });
 }
 
