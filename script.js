@@ -1,3 +1,4 @@
+let workUpServiceWorkerRegistration = null;
 /* =========================================================
    WORK UP — SCRIPT PRINCIPAL
    ========================================================= */
@@ -126,6 +127,27 @@ function getAuthRedirectUrl() {
 
     return PUBLISHED_APP_URL;
 }
+
+async function registerWorkUpServiceWorker() {
+    if (
+        !("serviceWorker" in navigator) ||
+        !window.location.protocol.startsWith("http")
+    ) {
+        return null;
+    }
+
+    try {
+        workUpServiceWorkerRegistration = await navigator.serviceWorker.register(
+            "./service-worker.js"
+        );
+        return workUpServiceWorkerRegistration;
+    } catch (error) {
+        console.error("Impossible d'activer le service worker", error);
+        return null;
+    }
+}
+
+registerWorkUpServiceWorker();
 
 async function handleAuthSubmit(event) {
     event.preventDefault();
@@ -904,6 +926,9 @@ const densitySetting =
 const notificationsSetting =
     document.getElementById("notificationsSetting");
 
+const notificationPermissionStatus =
+    document.getElementById("notificationPermissionStatus");
+
 const confirmDeleteSetting =
     document.getElementById("confirmDeleteSetting");
 
@@ -1016,13 +1041,93 @@ if (densitySetting) {
     );
 }
 
+function updateNotificationPermissionStatus(message) {
+    if (notificationPermissionStatus) {
+        notificationPermissionStatus.textContent = message;
+    }
+}
+
+function base64ToUint8Array(base64String) {
+    const padding = "=".repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding)
+        .replace(/-/g, "+")
+        .replace(/_/g, "/");
+    const rawData = window.atob(base64);
+
+    return Uint8Array.from(
+        [...rawData].map(character => character.charCodeAt(0))
+    );
+}
+
+async function savePushSubscription(subscription) {
+    if (!currentAccount) {
+        return;
+    }
+
+    const { error } = await supabaseClient
+        .from("push_subscriptions")
+        .upsert({
+            user_id: currentAccount.id,
+            endpoint: subscription.endpoint,
+            subscription: subscription.toJSON(),
+            updated_at: new Date().toISOString()
+        }, { onConflict: "user_id,endpoint" });
+
+    if (error) {
+        console.error("Impossible d'enregistrer l'abonnement Push", error);
+    }
+}
+
+async function enableNotifications() {
+    if (!("Notification" in window)) {
+        notificationsSetting.checked = false;
+        updateNotificationPermissionStatus("Les notifications ne sont pas supportées par ce navigateur.");
+        return;
+    }
+
+    const permission = await Notification.requestPermission();
+
+    if (permission !== "granted") {
+        notificationsSetting.checked = false;
+        appSettings.notifications = false;
+        saveAppSettings();
+        updateNotificationPermissionStatus("Autorisation refusée dans les réglages du navigateur.");
+        return;
+    }
+
+    appSettings.notifications = true;
+    saveAppSettings();
+    updateNotificationPermissionStatus("Notifications activées sur cet appareil.");
+
+    const vapidPublicKey = window.WORK_UP_NOTIFICATIONS?.vapidPublicKey;
+
+    if (vapidPublicKey && workUpServiceWorkerRegistration) {
+        const subscription = await workUpServiceWorkerRegistration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: base64ToUint8Array(vapidPublicKey)
+        });
+        await savePushSubscription(subscription);
+    }
+
+    new Notification("Work Up", {
+        body: "Les notifications Work Up sont activées.",
+        icon: "./icon-192.png"
+    });
+}
+
 if (notificationsSetting) {
     notificationsSetting.addEventListener(
         "change",
-        () => updateSetting(
-            "notifications",
-            notificationsSetting.checked
-        )
+        async () => {
+            if (notificationsSetting.checked) {
+                await enableNotifications();
+                return;
+            }
+
+            appSettings.notifications = false;
+            saveAppSettings();
+            updateNotificationPermissionStatus("Notifications désactivées dans Work Up.");
+        }
     );
 }
 
