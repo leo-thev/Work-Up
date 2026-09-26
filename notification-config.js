@@ -1,4 +1,3 @@
 window.WORK_UP_NOTIFICATIONS = {
-    // Add the public VAPID key here when remote push notifications are configured.
-    vapidPublicKey: ""
+    vapidPublicKey: "BPZPrYXEZvrnB-9Nz7Bp8FxT0Z7hXgIkOspC7L-kOUaUH-dv9NO46FG6K2KITNOrK9Pb7MWjISCvpsi78x4S3PI"
 };
