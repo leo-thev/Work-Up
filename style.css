@@ -707,6 +707,22 @@ select:focus-visible {
     margin-top: 22px;
 }
 
+.notification-test-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+}
+
+.notification-test-row .secondary-button {
+    flex-shrink: 0;
+    height: 34px;
+    padding: 0 11px;
+    font-size: 11px;
+}
+
 .settings-actions button {
     flex: 1;
     min-width: 160px;

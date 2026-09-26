@@ -83,3 +83,23 @@ with check (auth.uid() = user_id);
 ```
 
 Il faut ensuite generer une paire de cles VAPID, placer uniquement la cle publique dans `notification-config.js`, et utiliser une Supabase Edge Function avec la cle privee pour envoyer les notifications. La cle privee ne doit jamais etre ajoutee a GitHub.
+
+### Activer les notifications quand l'application est fermee
+
+Depuis la racine du projet, installer Supabase CLI puis se connecter :
+
+```powershell
+npx supabase login
+npx supabase link --project-ref vqpnagvvxnilxipwqmjd
+```
+
+Configurer les secrets. Remplacer `TA_CLE_PRIVEE_VAPID` par la cle privee obtenue avec `web-push generate-vapid-keys` :
+
+```powershell
+npx supabase secrets set VAPID_PUBLIC_KEY="BPZPrYXEZvrnB-9Nz7Bp8FxT0Z7hXgIkOspC7L-kOUaUH-dv9NO46FG6K2KITNOrK9Pb7MWjISCvpsi78x4S3PI" VAPID_PRIVATE_KEY="TA_CLE_PRIVEE_VAPID"
+npx supabase functions deploy send-push
+```
+
+Avant cela, executer `supabase/push-schema.sql` dans le SQL Editor Supabase. Ensuite, ouvrir Work Up sur le telephone, activer les notifications, puis utiliser **Parametres > Tester une notification**. Le telephone doit recevoir le Push meme si Work Up est ferme.
+
+La cle privee VAPID est un secret : ne pas la mettre dans `notification-config.js`, GitHub ou une conversation.

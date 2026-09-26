@@ -929,6 +929,9 @@ const notificationsSetting =
 const notificationPermissionStatus =
     document.getElementById("notificationPermissionStatus");
 
+const testPushNotificationButton =
+    document.getElementById("testPushNotification");
+
 const confirmDeleteSetting =
     document.getElementById("confirmDeleteSetting");
 
@@ -1129,6 +1132,35 @@ if (notificationsSetting) {
             updateNotificationPermissionStatus("Notifications désactivées dans Work Up.");
         }
     );
+}
+
+if (testPushNotificationButton) {
+    testPushNotificationButton.addEventListener("click", async () => {
+        testPushNotificationButton.disabled = true;
+
+        try {
+            const { data: sessionData } = await supabaseClient.auth.getSession();
+            const { error } = await supabaseClient.functions.invoke("send-push", {
+                body: {
+                    title: "Work Up",
+                    body: "La notification Push fonctionne."
+                },
+                headers: {
+                    Authorization: `Bearer ${sessionData.session?.access_token || ""}`
+                }
+            });
+
+            if (error) {
+                throw error;
+            }
+
+            updateNotificationPermissionStatus("Notification envoyée.");
+        } catch (error) {
+            updateNotificationPermissionStatus(`Test impossible : ${error.message}`);
+        } finally {
+            testPushNotificationButton.disabled = false;
+        }
+    });
 }
 
 if (confirmDeleteSetting) {
