@@ -103,3 +103,19 @@ npx supabase functions deploy send-push
 Avant cela, executer `supabase/push-schema.sql` dans le SQL Editor Supabase. Ensuite, ouvrir Work Up sur le telephone, activer les notifications, puis utiliser **Parametres > Tester une notification**. Le telephone doit recevoir le Push meme si Work Up est ferme.
 
 La cle privee VAPID est un secret : ne pas la mettre dans `notification-config.js`, GitHub ou une conversation.
+
+### Rappels automatiques a midi et 20 h
+
+Une seconde Edge Function `scheduled-reminders` est fournie. Elle utilise le fuseau `Europe/Paris` et envoie :
+
+- a 12 h : les priorites du Top 3 qui ne sont pas cochees ;
+- a 20 h : les habitudes qui ne sont pas cochees aujourd'hui.
+
+Apres avoir configure `VAPID_PUBLIC_KEY` et `VAPID_PRIVATE_KEY`, ajouter un secret cron :
+
+```powershell
+npx supabase secrets set CRON_SECRET="une-valeur-longue-et-aleatoire" --project-ref vqpnagvvxnilxipwqmjd
+npx supabase functions deploy scheduled-reminders --project-ref vqpnagvvxnilxipwqmjd
+```
+
+Dans `supabase/reminders-schema.sql`, remplacer `CRON_SECRET_VALUE` par la meme valeur, puis executer le fichier dans le SQL Editor. Il active `pg_cron`/`pg_net` et planifie l'appel toutes les 15 minutes ; la fonction n'envoie qu'a 12 h ou 20 h et empeche les doublons.
