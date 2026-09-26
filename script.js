@@ -55,22 +55,28 @@ const authNameField = document.getElementById("authNameField");
 const authNameInput = document.getElementById("authName");
 const authEmailInput = document.getElementById("authEmail");
 const authPasswordInput = document.getElementById("authPassword");
+const authPasswordLabel = document.getElementById("authPasswordLabel");
+const authConfirmPasswordField = document.getElementById("authConfirmPasswordField");
+const authConfirmPasswordInput = document.getElementById("authConfirmPassword");
 const passwordToggle = document.getElementById("passwordToggle");
 const authError = document.getElementById("authError");
 const authTitle = document.getElementById("authTitle");
 const authDescription = document.getElementById("authDescription");
 const authSubmit = document.getElementById("authSubmit");
 const authSwitch = document.getElementById("authSwitch");
+const forgotPasswordButton = document.getElementById("forgotPasswordButton");
 const accountName = document.getElementById("accountName");
 const logoutButton = document.getElementById("logoutButton");
 
 let isRegistering = false;
+let isResettingPassword = window.location.hash.includes("type=recovery");
 
 function showAuthError(message) {
     authError.textContent = message;
 }
 
 function updateAuthMode() {
+    isResettingPassword = false;
     isRegistering = !isRegistering;
     authNameField.hidden = !isRegistering;
     authNameInput.required = isRegistering;
@@ -81,6 +87,27 @@ function updateAuthMode() {
     authSubmit.textContent = isRegistering ? "Créer mon compte" : "Se connecter";
     authSwitch.textContent = isRegistering ? "J'ai déjà un compte" : "Créer un compte";
     authPasswordInput.autocomplete = isRegistering ? "new-password" : "current-password";
+    authPasswordLabel.textContent = "Mot de passe";
+    authConfirmPasswordField.hidden = true;
+    authConfirmPasswordInput.required = false;
+    forgotPasswordButton.hidden = isRegistering;
+    showAuthError("");
+}
+
+function showPasswordResetMode() {
+    isResettingPassword = true;
+    isRegistering = false;
+    authNameField.hidden = true;
+    authNameInput.required = false;
+    authPasswordLabel.textContent = "Nouveau mot de passe";
+    authPasswordInput.autocomplete = "new-password";
+    authConfirmPasswordField.hidden = false;
+    authConfirmPasswordInput.required = true;
+    authTitle.textContent = "Nouveau mot de passe";
+    authDescription.textContent = "Choisis un nouveau mot de passe pour ton compte.";
+    authSubmit.textContent = "Enregistrer le nouveau mot de passe";
+    authSwitch.hidden = true;
+    forgotPasswordButton.hidden = true;
     showAuthError("");
 }
 
@@ -98,6 +125,24 @@ async function handleAuthSubmit(event) {
     authSubmit.disabled = true;
 
     try {
+        if (isResettingPassword) {
+            if (authPasswordInput.value !== authConfirmPasswordInput.value) {
+                throw new Error("Les deux mots de passe ne correspondent pas.");
+            }
+
+            const { error } = await supabaseClient.auth.updateUser({
+                password: authPasswordInput.value
+            });
+
+            if (error) {
+                throw error;
+            }
+
+            window.history.replaceState({}, document.title, window.location.pathname);
+            window.location.reload();
+            return;
+        }
+
         const email = authEmailInput.value.trim().toLowerCase();
         const password = authPasswordInput.value;
         const redirectUrl = getAuthRedirectUrl();
@@ -139,6 +184,41 @@ async function handleAuthSubmit(event) {
 if (authForm) {
     authForm.addEventListener("submit", handleAuthSubmit);
     authSwitch.addEventListener("click", updateAuthMode);
+}
+
+if (forgotPasswordButton) {
+    forgotPasswordButton.addEventListener("click", async () => {
+        const email = authEmailInput.value.trim().toLowerCase();
+
+        if (!email) {
+            showAuthError("Saisis ton adresse e-mail pour recevoir le lien.");
+            authEmailInput.focus();
+            return;
+        }
+
+        forgotPasswordButton.disabled = true;
+
+        const options = {};
+        const redirectUrl = getAuthRedirectUrl();
+
+        if (redirectUrl) {
+            options.redirectTo = redirectUrl;
+        }
+
+        const { error } = await supabaseClient.auth.resetPasswordForEmail(
+            email,
+            options
+        );
+
+        if (error) {
+            showAuthError(error.message);
+            forgotPasswordButton.disabled = false;
+            return;
+        }
+
+        showAuthError("Un lien de réinitialisation vient d'être envoyé.");
+        forgotPasswordButton.disabled = false;
+    });
 }
 
 if (passwordToggle) {
@@ -224,6 +304,14 @@ async function initializeAuthentication() {
 
         if (error) {
             throw error;
+        }
+
+        if (isResettingPassword) {
+            authOverlay.hidden = false;
+            document.body.classList.remove("auth-checking");
+            document.body.classList.add("auth-locked");
+            showPasswordResetMode();
+            return;
         }
 
         if (!data.session) {
@@ -430,6 +518,9 @@ const revisionSheetCount =
 const revisionEmptyList =
     document.getElementById("revisionEmptyList");
 
+const revisionSearch =
+    document.getElementById("revisionSearch");
+
 const revisionEditorEmpty =
     document.getElementById("revisionEditorEmpty");
 
@@ -447,6 +538,14 @@ const revisionSections =
 
 const revisionSaveStatus =
     document.getElementById("revisionSaveStatus");
+
+const revisionReadModeButton =
+    document.getElementById("revisionReadMode");
+
+const revisionReviewedButton =
+    document.getElementById("revisionReviewed");
+
+let revisionReadMode = false;
 
 function createRevisionId() {
     return typeof crypto !== "undefined" && crypto.randomUUID
@@ -468,6 +567,7 @@ function createRevisionSheet() {
         title: "Nouvelle fiche",
         subject: "",
         sections: [createRevisionSection("Résumé")],
+        reviewed: false,
         updatedAt: Date.now()
     };
 
@@ -508,8 +608,15 @@ function updateRevisionEditor() {
 
     revisionEditorEmpty.hidden = true;
     revisionEditorContent.hidden = false;
+    revisionEditor.classList.toggle("is-reading", revisionReadMode);
     revisionTitleInput.value = sheet.title;
     revisionSubjectInput.value = sheet.subject || "";
+    revisionTitleInput.readOnly = revisionReadMode;
+    revisionSubjectInput.readOnly = revisionReadMode;
+    revisionReviewedButton.textContent = sheet.reviewed
+        ? "Révisée"
+        : "Marquer révisée";
+    revisionReviewedButton.classList.toggle("is-reviewed", Boolean(sheet.reviewed));
     revisionSections.innerHTML = "";
 
     sheet.sections.forEach((section, index) => {
@@ -529,11 +636,13 @@ function updateRevisionEditor() {
         sectionTitle.maxLength = 100;
         sectionTitle.value = section.title;
         sectionTitle.placeholder = "Titre de la sous-section";
+        sectionTitle.readOnly = revisionReadMode;
 
         const deleteSection = document.createElement("button");
         deleteSection.className = "delete-revision-section";
         deleteSection.type = "button";
         deleteSection.textContent = "Supprimer";
+        deleteSection.hidden = revisionReadMode;
         deleteSection.addEventListener("click", () => {
             if (sheet.sections.length === 1) {
                 return;
@@ -553,6 +662,16 @@ function updateRevisionEditor() {
         sectionContent.rows = 6;
         sectionContent.value = section.content || "";
         sectionContent.placeholder = "Écris ici les notions, définitions, exemples ou questions à retenir...";
+        sectionContent.readOnly = revisionReadMode;
+
+        const collapseSection = document.createElement("button");
+        collapseSection.className = "collapse-revision-section";
+        collapseSection.type = "button";
+        collapseSection.textContent = "Replier";
+        collapseSection.addEventListener("click", () => {
+            const isCollapsed = sectionElement.classList.toggle("is-collapsed");
+            collapseSection.textContent = isCollapsed ? "Déplier" : "Replier";
+        });
 
         sectionTitle.addEventListener("input", () => {
             section.title = sectionTitle.value;
@@ -564,6 +683,7 @@ function updateRevisionEditor() {
             saveRevisionSheets();
         });
 
+        sectionHeader.append(collapseSection);
         sectionElement.append(sectionHeader, sectionContent);
         revisionSections.appendChild(sectionElement);
     });
@@ -571,8 +691,17 @@ function updateRevisionEditor() {
 
 function renderRevisionSheets() {
     revisionSheetList.innerHTML = "";
-    revisionSheetCount.textContent = revisionSheets.length;
-    revisionEmptyList.hidden = revisionSheets.length > 0;
+    const searchTerm = revisionSearch.value.trim().toLowerCase();
+    const visibleSheets = revisionSheets.filter(sheet => {
+        const searchText = `${sheet.title} ${sheet.subject}`.toLowerCase();
+        return searchText.includes(searchTerm);
+    });
+
+    revisionSheetCount.textContent = visibleSheets.length;
+    revisionEmptyList.hidden = visibleSheets.length > 0;
+    revisionEmptyList.textContent = searchTerm
+        ? "Aucune fiche ne correspond à cette recherche."
+        : "Aucune fiche pour le moment.";
 
     if (
         !activeRevisionSheetId &&
@@ -581,7 +710,7 @@ function renderRevisionSheets() {
         activeRevisionSheetId = revisionSheets[0].id;
     }
 
-    revisionSheets.forEach(sheet => {
+    visibleSheets.forEach(sheet => {
         const item = document.createElement("button");
         item.className = "revision-sheet-item";
         item.type = "button";
@@ -627,6 +756,38 @@ function updateActiveRevisionMetadata() {
 
 revisionTitleInput.addEventListener("input", updateActiveRevisionMetadata);
 revisionSubjectInput.addEventListener("input", updateActiveRevisionMetadata);
+
+revisionSearch.addEventListener(
+    "input",
+    renderRevisionSheets
+);
+
+revisionReadModeButton.addEventListener(
+    "click",
+    () => {
+        revisionReadMode = !revisionReadMode;
+        revisionReadModeButton.textContent = revisionReadMode
+            ? "Modifier la fiche"
+            : "Mode lecture";
+        updateRevisionEditor();
+    }
+);
+
+revisionReviewedButton.addEventListener(
+    "click",
+    () => {
+        const sheet = getActiveRevisionSheet();
+
+        if (!sheet) {
+            return;
+        }
+
+        sheet.reviewed = !sheet.reviewed;
+        saveRevisionSheets();
+        updateRevisionEditor();
+        renderRevisionSheets();
+    }
+);
 
 document.getElementById("createRevisionSheet").addEventListener(
     "click",

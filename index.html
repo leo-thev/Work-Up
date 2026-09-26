@@ -59,12 +59,17 @@
                     <input id="authEmail" type="email" autocomplete="email" required>
                 </label>
 
-                <label class="auth-field">
-                    <span>Mot de passe</span>
+                <label class="auth-field" id="authPasswordField">
+                    <span id="authPasswordLabel">Mot de passe</span>
                     <span class="password-input-wrapper">
                         <input id="authPassword" type="password" autocomplete="current-password" minlength="8" required>
                         <button class="password-toggle" id="passwordToggle" type="button" aria-label="Afficher le mot de passe" aria-pressed="false">Afficher</button>
                     </span>
+                </label>
+
+                <label class="auth-field" id="authConfirmPasswordField" hidden>
+                    <span>Confirmer le nouveau mot de passe</span>
+                    <input id="authConfirmPassword" type="password" autocomplete="new-password" minlength="8">
                 </label>
 
                 <p class="auth-error" id="authError" role="alert"></p>
@@ -72,6 +77,7 @@
                 <button class="primary-button auth-submit" id="authSubmit" type="submit">Se connecter</button>
             </form>
 
+            <button class="auth-link" id="forgotPasswordButton" type="button">Mot de passe oublié ?</button>
             <button class="auth-switch" id="authSwitch" type="button">Créer un compte</button>
             <p class="auth-note">Tes données sont liées à ton compte et synchronisées avec Supabase.</p>
         </div>
@@ -313,6 +319,8 @@
                         <span class="eyebrow">MES FICHES</span>
                         <span class="task-count" id="revisionSheetCount">0</span>
                     </div>
+                    <label class="sr-only" for="revisionSearch">Rechercher une fiche</label>
+                    <input class="revision-search" id="revisionSearch" type="search" placeholder="Rechercher une fiche..." autocomplete="off">
                     <div class="revision-sheet-list" id="revisionSheetList"></div>
                     <p class="revision-empty-list" id="revisionEmptyList">Aucune fiche pour le moment.</p>
                 </aside>
@@ -332,7 +340,11 @@
                                 <input class="revision-title-input" id="revisionTitleInput" type="text" maxlength="100" placeholder="Titre de la fiche">
                                 <input class="revision-subject-input" id="revisionSubjectInput" type="text" maxlength="80" placeholder="Matière ou chapitre">
                             </div>
-                            <button class="delete-revision-button" id="deleteRevisionSheet" type="button">Supprimer</button>
+                            <div class="revision-editor-actions">
+                                <button class="secondary-button revision-read-mode" id="revisionReadMode" type="button">Mode lecture</button>
+                                <button class="secondary-button revision-reviewed" id="revisionReviewed" type="button">Marquer révisée</button>
+                                <button class="delete-revision-button" id="deleteRevisionSheet" type="button">Supprimer</button>
+                            </div>
                         </div>
 
                         <div class="revision-sections" id="revisionSections"></div>

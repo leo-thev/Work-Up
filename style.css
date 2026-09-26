@@ -282,6 +282,24 @@ select:focus-visible {
     border-bottom: 1px solid var(--border);
 }
 
+.revision-search {
+    width: 100%;
+    height: 34px;
+    margin-top: 12px;
+    padding: 0 10px;
+    color: var(--text);
+    background: #fafafa;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 11px;
+    outline: none;
+}
+
+.revision-search:focus {
+    border-color: var(--border-dark);
+    background: #fff;
+}
+
 .revision-sheet-list {
     display: grid;
     gap: 5px;
@@ -373,6 +391,23 @@ select:focus-visible {
     border-bottom: 1px solid var(--border);
 }
 
+.revision-editor-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 6px;
+}
+
+.revision-editor-actions button {
+    white-space: nowrap;
+}
+
+.revision-reviewed.is-reviewed {
+    color: #28714c;
+    background: #eaf6ef;
+    border-color: #c9e8d5;
+}
+
 .revision-title-input,
 .revision-subject-input,
 .revision-section-title {
@@ -438,6 +473,21 @@ select:focus-visible {
     margin-bottom: 11px;
 }
 
+.collapse-revision-section {
+    flex-shrink: 0;
+    padding: 4px 6px;
+    color: var(--text-soft);
+    background: transparent;
+    border-radius: 6px;
+    font-size: 10px;
+    cursor: pointer;
+}
+
+.collapse-revision-section:hover {
+    background: #ededeb;
+    color: var(--text);
+}
+
 .revision-section-number {
     flex-shrink: 0;
     color: var(--text-light);
@@ -468,6 +518,28 @@ select:focus-visible {
 
 .revision-section-content:focus {
     border-color: var(--border-dark);
+}
+
+.revision-section.is-collapsed .revision-section-content {
+    display: none;
+}
+
+.revision-editor.is-reading .revision-title-input,
+.revision-editor.is-reading .revision-subject-input,
+.revision-editor.is-reading .revision-section-title {
+    border-color: transparent;
+    cursor: default;
+}
+
+.revision-editor.is-reading .revision-section-content {
+    background: #fff;
+    border-color: transparent;
+    resize: none;
+}
+
+.revision-editor.is-reading .revision-add-section,
+.revision-editor.is-reading .revision-save-status {
+    display: none;
 }
 
 .revision-add-section {
@@ -2991,6 +3063,11 @@ select:focus-visible {
         gap: 12px;
     }
 
+    .revision-editor-actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
     .revision-title-input {
         font-size: 24px;
     }
@@ -5344,6 +5421,20 @@ body.auth-checking > *:not(.auth-overlay) {
 }
 
 .auth-switch:hover {
+    text-decoration: underline;
+}
+
+.auth-link {
+    display: block;
+    margin: 16px auto 0;
+    color: var(--text-soft);
+    background: transparent;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.auth-link:hover {
+    color: var(--text);
     text-decoration: underline;
 }
 
