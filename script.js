@@ -68,8 +68,12 @@ const forgotPasswordButton = document.getElementById("forgotPasswordButton");
 const accountName = document.getElementById("accountName");
 const logoutButton = document.getElementById("logoutButton");
 
+const PUBLISHED_APP_URL = "https://leo-thev.github.io/Work-Up/";
+
 let isRegistering = false;
-let isResettingPassword = window.location.hash.includes("type=recovery");
+let isResettingPassword =
+    window.location.hash.includes("type=recovery") ||
+    new URLSearchParams(window.location.search).get("type") === "recovery";
 
 function showAuthError(message) {
     authError.textContent = message;
@@ -112,11 +116,15 @@ function showPasswordResetMode() {
 }
 
 function getAuthRedirectUrl() {
-    if (!window.location.protocol.startsWith("http")) {
-        return null;
+    if (window.location.hostname === "leo-thev.github.io") {
+        return PUBLISHED_APP_URL;
     }
 
-    return `${window.location.origin}${window.location.pathname}`;
+    if (window.location.protocol.startsWith("http")) {
+        return `${window.location.origin}${window.location.pathname}`;
+    }
+
+    return PUBLISHED_APP_URL;
 }
 
 async function handleAuthSubmit(event) {
